@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import OrderCard from "../../components/order-card/order-card";
+import { OrdersBoard } from "../../components/orders-board";
 import OrdersSummary from "../../components/orders-summary";
 import type { OrderSummary } from "../../types/order-summary";
 
@@ -42,11 +42,7 @@ export default async function OrdersPage() {
       {orders && orders.length > 0 && (
         <>
           <OrdersSummary total={total} pending={pending} ready={ready} />
-          <section className="orders-grid" aria-label="Listado de pedidos">
-            {orders.map(({ id, item, quantity, status }) => (
-              <OrderCard key={id} order={{ id, item, quantity, status }} />
-            ))}
-          </section>
+          <OrdersBoard orders={orders} />
         </>
       )}
     </main>
