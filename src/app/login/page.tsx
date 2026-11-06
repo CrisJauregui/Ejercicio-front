@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -58,6 +59,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </p>
         <button type="submit">Entrar</button>
       </form>
+
+      <p>
+        ¿No tienes cuenta? <Link href="/register">Crear cuenta</Link>
+      </p>
     </main>
   );
 }
