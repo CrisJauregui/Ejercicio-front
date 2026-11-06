@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Coffee Orders Web
 
-## Getting Started
+Frontend de Coffee Orders hecho con Next.js.
 
-First, run the development server:
+## Preguntas para revisar el ejercicio
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### 1. ¿Qué archivo determina que exista la ruta `/orders`?
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+El archivo `src/app/orders/page.tsx`. En Next, cada carpeta dentro de `app` que tenga un `page.tsx` se vuelve una ruta, y el nombre de la carpeta es el nombre de la ruta.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 2. ¿Por qué el encabezado no se copia dentro de las dos páginas?
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Porque ya está en el `layout.tsx`, que envuelve todas las páginas. El encabezado se pone una sola vez ahí, y en `{children}` va la página en la que estés. Si lo pusiera también en cada página, se vería dos veces, y si quisiera cambiarlo tendría que hacerlo en varios lados.
 
-## Learn More
+### 3. ¿De dónde recibe `OrderCard` el nombre y la cantidad del producto?
 
-To learn more about Next.js, take a look at the following resources:
+Por props. La página de pedidos le pasa cada pedido a la tarjeta, y la tarjeta solo muestra `order.item` y `order.quantity`; no busca nada por su cuenta. Al principio los datos venían de `sampleOrders`, y ahora vienen de la API.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 4. ¿Qué debe cambiar para agregar otro pedido sin duplicar el código de la tarjeta?
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Solo los datos. Con los datos de práctica, se agrega otro objeto en `sample-orders.ts`; ahora que está conectado al backend, se crea el pedido en la API. El `map()` hace una tarjeta por cada pedido, así que no hay que tocar la tarjeta. El resumen también se actualiza solo, porque se calcula con `length` y `filter()`.
 
-## Deploy on Vercel
+### 5. ¿Qué diferencia hay entre el `OrderSummary` del frontend y la entidad de TypeORM?
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+`OrderSummary` es solo un tipo de TypeScript que dice qué datos necesita la pantalla: `id`, `item`, `quantity` y `status`. No guarda nada ni valida nada. La entidad de TypeORM está en el backend: es la que define la tabla en la base de datos y se usa para guardar y leer los pedidos. Las validaciones y las reglas siguen estando en NestJS.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 6. ¿Por qué filtrar la pantalla no cambia los pedidos del backend?
+
+Porque el filtro solo cambia lo que se ve. Con `useState` se guarda si quiero ver todos o solo los pendientes, y con `filter()` se escogen cuáles mostrar de la lista que ya llegó. No cambia el estado de ningún pedido, no le manda nada a la API y no guarda nada. Si recargo la página, todo sigue igual en la base de datos.
+
+## Para cerrar
+
+### ¿Qué cambió al pasar de React con Vite a Next.js: cómo se dibuja la tarjeta o quién consulta la API?
+
+La tarjeta se hace igual que antes: es un componente con JSX, recibe el pedido por props y la lista se arma con `map()`. Lo que cambió es quién le pide los datos a la API. En React con Vite lo hacía el navegador, con `useEffect`, `fetch` y `setOrders`. En Next.js lo hace el servidor de Next: la página `/orders` es `async`, hace el `fetch` a NestJS y le pasa los pedidos ya listos a las tarjetas.
+
+### ¿Quién guarda el JWT y quién lo valida?
+
+Lo guarda el navegador en una cookie llamada `coffee_token`. Cuando inicio sesión, NestJS me devuelve el token y la función `login` de Next lo guarda en esa cookie. Como es `httpOnly`, el JavaScript del navegador no la puede leer. Cada vez que entro a `/orders`, Next toma el token de la cookie y se lo manda a NestJS como `Authorization: Bearer ...`. El que de verdad revisa si el token sirve es NestJS. Si está vencido o no es válido, responde `401` y me devuelve al login.
