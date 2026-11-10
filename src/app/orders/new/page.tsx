@@ -23,6 +23,7 @@ async function createOrder(formData: FormData) {
   }).catch(() => null);
 
   if (response?.status === 401) redirect("/login");
+    if (!response?.ok) console.log("Error API:", response?.status, await response?.text());
   if (!response?.ok) redirect("/orders/new?error=1");
 
   redirect("/orders");
