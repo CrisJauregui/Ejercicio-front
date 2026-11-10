@@ -7,7 +7,7 @@ async function createOrder(formData: FormData) {
 
   const item = formData.get("item");
   const quantity = Number(formData.get("quantity"));
-  const status = formData.get("status");
+  const customerId = Number(formData.get("customerId"));
 
   const cookieStore = await cookies();
   const token = cookieStore.get("coffee_token")?.value;
@@ -19,7 +19,7 @@ async function createOrder(formData: FormData) {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ item, quantity, status }),
+    body: JSON.stringify({ item, quantity, customerId }),
   }).catch(() => null);
 
   if (response?.status === 401) redirect("/login");
@@ -57,11 +57,7 @@ export default async function NewOrderPage({ searchParams }: NewOrderPageProps) 
         </p>
         <p>
           <label>
-            Estado
-            <select name="status" defaultValue="pending">
-              <option value="pending">Pendiente</option>
-              <option value="ready">Listo</option>
-            </select>
+            ID del cliente <input name="customerId" type="number" min={1} required />
           </label>
         </p>
         <button type="submit">Crear orden</button>
