@@ -1,0 +1,74 @@
+import Link from "next/link";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+
+async function createOrder(formData: FormData) {
+  "use server";
+
+  const item = formData.get("item");
+  const quantity = Number(formData.get("quantity"));
+  const status = formData.get("status");
+
+  const cookieStore = await cookies();
+  const token = cookieStore.get("coffee_token")?.value;
+  if (!token) redirect("/login");
+
+  const response = await fetch(`${process.env.COFFEE_API_URL}/orders`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ item, quantity, status }),
+  }).catch(() => null);
+
+  if (response?.status === 401) redirect("/login");
+  if (!response?.ok) redirect("/orders/new?error=1");
+
+  redirect("/orders");
+}
+
+type NewOrderPageProps = {
+  searchParams: Promise<{ error?: string }>;
+};
+
+export default async function NewOrderPage({ searchParams }: NewOrderPageProps) {
+  const { error } = await searchParams;
+
+  const cookieStore = await cookies();
+  const token = cookieStore.get("coffee_token")?.value;
+  if (!token) redirect("/login");
+
+  return (
+    <main>
+      <h1>Nueva orden</h1>
+      {error === "1" && <p role="alert">No se pudo crear la orden. Revisar los datos o la conexión.</p>}
+
+      <form action={createOrder}>
+        <p>
+          <label>
+            Producto <input name="item" required />
+          </label>
+        </p>
+        <p>
+          <label>
+            Cantidad <input name="quantity" type="number" min={1} defaultValue={1} required />
+          </label>
+        </p>
+        <p>
+          <label>
+            Estado
+            <select name="status" defaultValue="pending">
+              <option value="pending">Pendiente</option>
+              <option value="ready">Listo</option>
+            </select>
+          </label>
+        </p>
+        <button type="submit">Crear orden</button>
+      </form>
+      <p>
+        <Link href="/orders">Cancelar</Link>
+      </p>
+    </main>
+  );
+}

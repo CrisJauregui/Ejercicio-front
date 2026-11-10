@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { OrdersBoard } from "../../components/orders-board";
@@ -36,6 +37,10 @@ export default async function OrdersPage() {
       <form action={logout}>
         <button type="submit">Cerrar sesión</button>
       </form>
+
+      <p>
+        <Link href="/orders/new">Nueva orden</Link>
+      </p>
 
       {orders === null && <p role="alert">No se pudieron consultar los pedidos.</p>}
       {orders?.length === 0 && <p>Todavía no hay pedidos.</p>}
